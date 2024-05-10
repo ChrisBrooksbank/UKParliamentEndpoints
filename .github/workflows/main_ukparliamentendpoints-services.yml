@@ -20,11 +20,7 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '8.x'
-          include-prerelease: true
-
-      - name: Set Azure Table Connection String as Environment Variable
-        env:
-          AzureTableConnectionString: ${{ secrets.AZURETABLECONNECTIONSTRING }}
+          include-prerelease: true     
 
       - name: Build with dotnet
         run: cd admin && dotnet build UKParliamentEndPointsAdmin.sln --configuration Release
