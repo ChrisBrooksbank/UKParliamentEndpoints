@@ -16,7 +16,9 @@
             {
                 Id = $"{e.PartitionKey}.{e.RowKey}",
                 Uri = e.Uri,
-                Description = e.Description
+                Description = e.Description,
+                CachedResponse = e.CachedResponse,
+                CachedDateTime = e.CachedTimeStamp
             });
         }
 
@@ -44,7 +46,9 @@
                 RowKey = endpoint.Id.GetRowKey(),
                 Timestamp = DateTime.Now,
                 Uri = endpoint.Uri,
-                Description = endpoint.Description
+                Description = endpoint.Description,
+                CachedResponse = endpoint.CachedResponse,
+                CachedTimeStamp = endpoint.CachedDateTime
             };
 
             await _repository.AddAsync(entity);
@@ -53,6 +57,26 @@
         public async Task DeleteAsync(string id)
         {
             await _repository.DeleteAsync(id);
+        }
+
+        public async Task CacheResponse(string id)
+        {
+            var endpoint = await this.GetAsync(id);
+            if (!string.IsNullOrWhiteSpace(endpoint?.Uri))
+            {
+                var responseString = await FetchStringFromEndpointAsync(endpoint.Uri);
+                await _repository.SetCachedResponse(endpoint.Id, responseString);
+            }
+        }
+
+        static async Task<string> FetchStringFromEndpointAsync(string url)
+        {
+            using (var httpClient = new HttpClient())
+            {
+                HttpResponseMessage response = await httpClient.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadAsStringAsync();
+            }
         }
     }
 }

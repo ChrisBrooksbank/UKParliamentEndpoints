@@ -12,6 +12,8 @@ namespace UKParliamentEndPointsAdmin.Shared
 
         public string? Uri { get; set; }
         public string? Description { get; set; }
+        public string CachedResponse { get; set; }
+        public DateTime CachedTimeStamp { get; set; }
 
         public EndPointEntity()
         {

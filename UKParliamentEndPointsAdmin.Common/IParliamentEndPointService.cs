@@ -6,5 +6,6 @@
         Task<ParliamentEndPoint> GetAsync(string id);
         Task AddAsync(ParliamentEndPoint endpoint);
         Task DeleteAsync(string id);
+        Task CacheResponse(string id);
     }
 }

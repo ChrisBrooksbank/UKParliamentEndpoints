@@ -42,5 +42,11 @@ namespace UKParliamentEndPointsAdmin.API.Controllers
         {
             await _parliamentEndPointService.DeleteAsync(id);
         }
+
+        [HttpPost("endpoints/{id}/updatecache")]
+        public async Task UpdateResponse(string id)
+        {
+            await _parliamentEndPointService.CacheResponse(id);
+        }
     }
 }
