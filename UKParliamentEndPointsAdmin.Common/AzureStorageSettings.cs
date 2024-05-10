@@ -2,6 +2,6 @@
 {
     public class AzureStorageSettings
     {
-        public string AzureTableConnectionString { get; }
+        public string AzureTableConnectionString => Environment.GetEnvironmentVariable("UKParliamentEndPoints.ConnectionString");
     }
 }

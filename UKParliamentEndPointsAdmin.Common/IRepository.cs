@@ -3,5 +3,6 @@
     public interface IRepository
     {
         Task<IEnumerable<EndPointEntity>> GetAllAsync();
+        Task AddAsync(EndPointEntity entity);
     }
 }

@@ -11,10 +11,6 @@ namespace UKParliamentEndPointsAdmin.Shared
         public Repository(IOptions<AzureStorageSettings> settings)
         {
             var connectionString = settings.Value.AzureTableConnectionString;
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                connectionString = Environment.GetEnvironmentVariable("AzureTableConnectionString");
-            }
             var tableServiceClient = new TableServiceClient(connectionString);
             tableServiceClient.CreateTableIfNotExists(EndpointsTableName);
             _endpointTableClient = tableServiceClient.GetTableClient(EndpointsTableName);
@@ -32,6 +28,10 @@ namespace UKParliamentEndPointsAdmin.Shared
 
             return allEntities;
         }
-           
+
+        public async Task AddAsync(EndPointEntity entity)
+        {
+            await _endpointTableClient.AddEntityAsync<EndPointEntity>(entity);
+        }
     }
 }

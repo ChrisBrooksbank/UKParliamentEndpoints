@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Azure;
 using UKParliamentEndPointsAdmin.Shared;
 
 namespace UKParliamentEndPointsAdmin.API.Controllers
@@ -18,10 +19,16 @@ namespace UKParliamentEndPointsAdmin.API.Controllers
             _parliamentEndPointService = parliamentEndPointService;
         }
 
-        [HttpGet(Name = "GetParliamentEndPoint")]
+        [HttpGet("endpoints")]
         public async Task<IEnumerable<ParliamentEndPoint>> Get()
         {
             return await _parliamentEndPointService.GetAllAsync();
+        }
+
+        [HttpPost("endpoints")]
+        public async Task Add([FromBody] ParliamentEndPoint endpoint)
+        {
+            await _parliamentEndPointService.AddAsync(endpoint);
         }
     }
 }
