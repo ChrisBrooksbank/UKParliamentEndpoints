@@ -19,7 +19,7 @@ namespace UKParliamentEndPointsAdmin.Shared
         public async Task<IEnumerable<EndPointEntity>> GetAllAsync()
         {
             var queryResults = _endpointTableClient.QueryAsync<EndPointEntity>(); 
-            List<EndPointEntity> allEntities = new List<EndPointEntity>();
+            var allEntities = new List<EndPointEntity>();
 
             await foreach (var page in queryResults.AsPages())
             {
@@ -29,9 +29,30 @@ namespace UKParliamentEndPointsAdmin.Shared
             return allEntities;
         }
 
+        public async Task<EndPointEntity> GetAsync(string id)
+        {
+            var partitionKey = id.GetPartitionKey();
+            var rowKey = id.GetRowKey();
+            var queryResults = _endpointTableClient
+                .QueryAsync<EndPointEntity>(e => e.PartitionKey == partitionKey && e.RowKey == rowKey );
+            var allEntities = new List<EndPointEntity>();
+
+            await foreach (var page in queryResults.AsPages())
+            {
+                allEntities.AddRange(page.Values);
+            }
+
+            return allEntities.SingleOrDefault();
+        }
+
         public async Task AddAsync(EndPointEntity entity)
         {
             await _endpointTableClient.AddEntityAsync<EndPointEntity>(entity);
+        }
+
+        public async Task DeleteAsync(string id)
+        {
+            await _endpointTableClient.DeleteEntityAsync(id.GetPartitionKey(), id.GetRowKey());
         }
     }
 }

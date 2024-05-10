@@ -1,7 +1,4 @@
-﻿
-using static System.Net.Mime.MediaTypeNames;
-
-namespace UKParliamentEndPointsAdmin.Shared
+﻿namespace UKParliamentEndPointsAdmin.Shared
 {
     public class ParliamentEndPointService : IParliamentEndPointService
     {
@@ -23,24 +20,39 @@ namespace UKParliamentEndPointsAdmin.Shared
             });
         }
 
-        public async Task AddAsync(ParliamentEndPoint endpoint)
+        public async Task<ParliamentEndPoint> GetAsync(string id)
         {
-            int dotIndex = endpoint.Id.IndexOf('.');
-            if (dotIndex < 0)
+            var entity = await _repository.GetAsync(id);
+            if (entity is null)
             {
-                throw new ArgumentException("ID needs to split with a dot");
+                return null;
             }
 
+            return new ParliamentEndPoint
+            {
+                Id = $"{entity.PartitionKey}.{entity.RowKey}",
+                Uri = entity.Uri,
+                Description = entity.Description
+            };
+        }
+
+        public async Task AddAsync(ParliamentEndPoint endpoint)
+        {
             var entity = new EndPointEntity
             {
-                PartitionKey = endpoint.Id.Substring(0, dotIndex),
-                RowKey = endpoint.Id.Substring(dotIndex + 1),
+                PartitionKey = endpoint.Id.GetPartitionKey(),
+                RowKey = endpoint.Id.GetRowKey(),
                 Timestamp = DateTime.Now,
                 Uri = endpoint.Uri,
                 Description = endpoint.Description
             };
 
             await _repository.AddAsync(entity);
+        }
+
+        public async Task DeleteAsync(string id)
+        {
+            await _repository.DeleteAsync(id);
         }
     }
 }

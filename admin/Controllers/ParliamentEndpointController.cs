@@ -30,5 +30,17 @@ namespace UKParliamentEndPointsAdmin.API.Controllers
         {
             await _parliamentEndPointService.AddAsync(endpoint);
         }
+
+        [HttpGet("endpoints/{id}")]
+        public async Task<ParliamentEndPoint> Get(string id)
+        {
+            return await _parliamentEndPointService.GetAsync(id);
+        }
+
+        [HttpDelete("endpoints/{id}")]
+        public async Task Delete(string id)
+        {
+            await _parliamentEndPointService.DeleteAsync(id);
+        }
     }
 }
