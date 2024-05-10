@@ -2,6 +2,6 @@
 {
     public class AzureStorageSettings
     {
-        public string AzureTableConnectionString { get; set; }
+        public string AzureTableConnectionString { get; }
     }
 }
