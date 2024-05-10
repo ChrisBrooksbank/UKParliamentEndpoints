@@ -7,6 +7,7 @@ var configurationBuilder = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddUserSecrets<Program>();
+
 var configuration = configurationBuilder.Build();
 builder.Services.Configure<AzureStorageSettings>(configuration.GetSection("AzureStorage"));
 

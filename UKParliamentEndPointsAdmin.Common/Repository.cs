@@ -10,7 +10,12 @@ namespace UKParliamentEndPointsAdmin.Shared
 
         public Repository(IOptions<AzureStorageSettings> settings)
         {
-            var tableServiceClient = new TableServiceClient(settings.Value.AzureTableConnectionString);
+            var connectionString = settings.Value.AzureTableConnectionString;
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                connectionString = Environment.GetEnvironmentVariable("AzureTableConnectionString");
+            }
+            var tableServiceClient = new TableServiceClient(connectionString);
             tableServiceClient.CreateTableIfNotExists(EndpointsTableName);
             _endpointTableClient = tableServiceClient.GetTableClient(EndpointsTableName);
         }
