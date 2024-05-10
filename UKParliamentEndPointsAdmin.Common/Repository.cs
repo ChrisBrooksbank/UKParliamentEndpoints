@@ -54,5 +54,16 @@ namespace UKParliamentEndPointsAdmin.Shared
         {
             await _endpointTableClient.DeleteEntityAsync(id.GetPartitionKey(), id.GetRowKey());
         }
+
+        public async Task SetCachedResponse(string id, string response)
+        {
+            var entity = await GetAsync(id);
+            if (entity != null)
+            {
+                entity.CachedResponse = response;
+                entity.CachedTimeStamp = DateTime.Now.ToUniversalTime();
+                await _endpointTableClient.UpdateEntityAsync<EndPointEntity>(entity, entity.ETag);
+            }
+        }
     }
 }
