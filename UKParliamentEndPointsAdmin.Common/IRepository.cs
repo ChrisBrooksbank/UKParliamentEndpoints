@@ -1,7 +1,7 @@
 ﻿namespace UKParliamentEndPointsAdmin.Shared;
 public interface IRepository
 {
-    Task<IEnumerable<EndPointEntity>> GetAllAsync();
+    Task<IEnumerable<EndPointEntity>> SearchAsync(SearchQuery searchQuery);
     Task<EndPointEntity> GetAsync(string id);
     Task AddAsync(EndPointEntity entity);
     Task UpdateAsync(EndPointEntity entity);
