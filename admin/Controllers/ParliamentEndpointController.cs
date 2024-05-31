@@ -24,9 +24,9 @@ public class ParliamentEndpointController : ControllerBase
     }
 
     [HttpGet("endpoints")]
-    public async Task<IEnumerable<ParliamentEndPoint>> GetAll()
+    public async Task<IEnumerable<ParliamentEndPoint>> Search([FromQuery] SearchQuery searchQuery)
     {
-        return await _parliamentEndPointService.GetAllAsync();
+        return await _parliamentEndPointService.SearchAsync(searchQuery);
     }
 
     [HttpGet("endpoints/{id}")]

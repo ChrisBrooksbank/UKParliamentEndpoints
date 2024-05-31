@@ -16,23 +16,30 @@ public class Repository : IRepository
         _endpointTableClient = tableServiceClient.GetTableClient(EndpointsTableName);
     }
 
-    public async Task<IEnumerable<EndPointEntity>> GetAllAsync()
+    public async Task<IEnumerable<EndPointEntity>> SearchAsync(SearchQuery searchQuery)
     {
-        var queryResults = _endpointTableClient.QueryAsync<EndPointEntity>();
+        var query = _endpointTableClient.QueryAsync<EndPointEntity>();
+        
+        var queryResults = query.AsPages();
         var allEntities = new List<EndPointEntity>();
-        var pageCount = 0;
 
-        await foreach (var page in queryResults.AsPages())
+        await foreach (var page in queryResults)
         {
             allEntities.AddRange(page.Values);
-            pageCount += page.Values.Count;
-
-            if (pageCount >= MaxPageSize)
-            {
-                break;
-            }
         }
 
+        if (!string.IsNullOrWhiteSpace(searchQuery.Description))
+        {
+            allEntities = allEntities
+                .Where(e => e.Description?.Contains(searchQuery.Description, StringComparison.OrdinalIgnoreCase) == true)
+                .ToList();
+        }
+
+        if (searchQuery.Skip is > 0)
+        {
+            allEntities = allEntities.Skip(searchQuery.Skip.Value).ToList();
+        }
+        allEntities = allEntities.Take(searchQuery.Take ?? MaxPageSize).ToList();
         return allEntities;
     }
 

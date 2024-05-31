@@ -12,9 +12,9 @@
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<ParliamentEndPoint>> GetAllAsync()
+        public async Task<IEnumerable<ParliamentEndPoint>> SearchAsync(SearchQuery searchQuery)
         {
-            var endPointEntities =  await _repository.GetAllAsync();
+            var endPointEntities =  await _repository.SearchAsync(searchQuery);
             return endPointEntities.Select(_mapper.Map);
         }
 
@@ -63,10 +63,10 @@
 
                 try
                 {
-                    var response = await httpClient.GetAsync(endpoint.Uri);
+                    var request = new HttpRequestMessage(HttpMethod.Head, endpoint.Uri);
+                    var response = await httpClient.SendAsync(request);
                     pingHttpResponseStatus = (int)response.StatusCode;
                     pingStatus = response.IsSuccessStatusCode ? "Success" : "Failed";
-                  
                 }
                 catch (HttpRequestException ex)
                 {
