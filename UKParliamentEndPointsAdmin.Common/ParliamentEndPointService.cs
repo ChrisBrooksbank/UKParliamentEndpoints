@@ -3,25 +3,19 @@
     public class ParliamentEndPointService : IParliamentEndPointService
     {
         private readonly IRepository _repository;
+        private readonly IEndPointMapper _mapper;
         private const int HttpRequestTimeOutSeconds = 10;
 
-        public ParliamentEndPointService(IRepository repository)
+        public ParliamentEndPointService(IRepository repository, IEndPointMapper mapper)
         {
             _repository = repository;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<ParliamentEndPoint>> GetAllAsync()
         {
             var endPointEntities =  await _repository.GetAllAsync();
-            return endPointEntities.Select(e => new ParliamentEndPoint
-            {
-                Id = $"{e.PartitionKey}.{e.RowKey}",
-                Uri = e.Uri,
-                Description = e.Description,
-                PingTimeStamp = e.PingTimeStamp,
-                PingHttpResponseStatus = e.PingHttpResponseStatus,
-                PingStatus = e.PingStatus
-            });
+            return endPointEntities.Select(_mapper.Map);
         }
 
         public async Task<ParliamentEndPoint> GetAsync(string id)
@@ -31,33 +25,24 @@
             {
                 return null;
             }
-
-            return new ParliamentEndPoint
-            {
-                Id = $"{entity.PartitionKey}.{entity.RowKey}",
-                Uri = entity.Uri,
-                Description = entity.Description,
-                PingTimeStamp = entity.PingTimeStamp,
-                PingHttpResponseStatus = entity.PingHttpResponseStatus,
-                PingStatus =  entity.PingStatus
-            };
+            return _mapper.Map(entity);
         }
 
-        public async Task AddAsync(ParliamentEndPoint endpoint)
+        public async Task<ParliamentEndPoint> AddAsync(ParliamentEndPoint endpoint)
         {
-            var entity = new EndPointEntity
-            {
-                PartitionKey = endpoint.Id.GetPartitionKey(),
-                RowKey = endpoint.Id.GetRowKey(),
-                Timestamp = DateTime.Now,
-                Uri = endpoint.Uri,
-                Description = endpoint.Description,
-                PingTimeStamp = endpoint.PingTimeStamp,
-                PingHttpResponseStatus = endpoint.PingHttpResponseStatus,
-                PingStatus = endpoint.PingStatus
-            };
-
+            var entity = _mapper.Map(endpoint);
             await _repository.AddAsync(entity);
+            return await GetAsync(endpoint.Id);
+        }
+
+        public async Task<ParliamentEndPoint> UpdateAsync(ParliamentEndPoint endpoint)
+        {
+            var entityOnDb = await _repository.GetAsync(endpoint.Id);
+            var entity = _mapper.Map(endpoint);
+            entity.ETag = entityOnDb.ETag;
+            await _repository.UpdateAsync(entity);
+            await Ping(endpoint.Id);
+            return _mapper.Map(entity);
         }
 
         public async Task DeleteAsync(string id)
@@ -65,7 +50,7 @@
             await _repository.DeleteAsync(id);
         }
 
-        public async Task Ping(string id)
+        public async Task<ParliamentEndPoint> Ping(string id)
         {
             var endpoint = await this.GetAsync(id);
             if (!string.IsNullOrWhiteSpace(endpoint?.Uri))
@@ -98,7 +83,7 @@
 
                 await _repository.SetPingResponse(endpoint.Id, pingHttpResponseStatus, pingStatus);
             }
+            return await GetAsync(id);
         }
-
     }
 }

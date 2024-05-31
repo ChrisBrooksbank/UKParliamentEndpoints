@@ -1,27 +1,25 @@
-﻿namespace UKParliamentEndPointsAdmin.Shared
+﻿namespace UKParliamentEndPointsAdmin.Shared;
+public static class StringExtensions
 {
-    public static class StringExtensions
+    public static string GetPartitionKey(this string id)
     {
-        public static string GetPartitionKey(this string id)
+        int dotPosition = id.IndexOf(".");
+        if (dotPosition < 0)
         {
-            int dotPosition = id.IndexOf(".");
-            if (dotPosition < 0)
-            {
-                return string.Empty;
-            }
-
-            return id.Substring(0, dotPosition);
+            return string.Empty;
         }
 
-        public static string GetRowKey(this string id)
-        {
-            int dotPosition = id.IndexOf(".");
-            if (dotPosition < 0)
-            {
-                return id;
-            }
+        return id.Substring(0, dotPosition);
+    }
 
-            return id.Substring(dotPosition + 1);
+    public static string GetRowKey(this string id)
+    {
+        int dotPosition = id.IndexOf(".");
+        if (dotPosition < 0)
+        {
+            return id;
         }
+
+        return id.Substring(dotPosition + 1);
     }
 }

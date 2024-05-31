@@ -1,51 +1,55 @@
 using Microsoft.AspNetCore.Mvc;
 using UKParliamentEndPointsAdmin.Shared;
 
-namespace UKParliamentEndPointsAdmin.API.Controllers
-{
-    [ApiController]
-    [Route("[controller]")]
-    public class ParliamentEndpointController : ControllerBase
-    {       
-        private readonly ILogger<ParliamentEndpointController> _logger;
-        private readonly IParliamentEndPointService _parliamentEndPointService;
+namespace UKParliamentEndPointsAdmin.API.Controllers;
 
+[ApiController]
+[Route("[controller]")]
+public class ParliamentEndpointController : ControllerBase
+{       
+    private readonly ILogger<ParliamentEndpointController> _logger;
+    private readonly IParliamentEndPointService _parliamentEndPointService;
 
-        public ParliamentEndpointController(ILogger<ParliamentEndpointController> logger, 
-            IParliamentEndPointService parliamentEndPointService)
-        {
-            _logger = logger;
-            _parliamentEndPointService = parliamentEndPointService;
-        }
+    public ParliamentEndpointController(ILogger<ParliamentEndpointController> logger, 
+        IParliamentEndPointService parliamentEndPointService)
+    {
+        _logger = logger;
+        _parliamentEndPointService = parliamentEndPointService;
+    }
 
-        [HttpGet("endpoints")]
-        public async Task<IEnumerable<ParliamentEndPoint>> Get()
-        {
-            return await _parliamentEndPointService.GetAllAsync();
-        }
+    [HttpPost("endpoints")]
+    public async Task<ParliamentEndPoint> Add([FromBody] ParliamentEndPoint endpoint)
+    {
+        return await _parliamentEndPointService.AddAsync(endpoint);
+    }
 
-        [HttpPost("endpoints")]
-        public async Task Add([FromBody] ParliamentEndPoint endpoint)
-        {
-            await _parliamentEndPointService.AddAsync(endpoint);
-        }
+    [HttpGet("endpoints")]
+    public async Task<IEnumerable<ParliamentEndPoint>> GetAll()
+    {
+        return await _parliamentEndPointService.GetAllAsync();
+    }
 
-        [HttpGet("endpoints/{id}")]
-        public async Task<ParliamentEndPoint> Get(string id)
-        {
-            return await _parliamentEndPointService.GetAsync(id);
-        }
+    [HttpGet("endpoints/{id}")]
+    public async Task<ParliamentEndPoint> GetById(string id)
+    {
+        return await _parliamentEndPointService.GetAsync(id);
+    }
 
-        [HttpDelete("endpoints/{id}")]
-        public async Task Delete(string id)
-        {
-            await _parliamentEndPointService.DeleteAsync(id);
-        }
+    [HttpPut("endpoints")]
+    public async Task<ParliamentEndPoint> Update([FromBody] ParliamentEndPoint endpoint)
+    {
+        return await _parliamentEndPointService.UpdateAsync(endpoint);
+    }
 
-        [HttpPost("endpoints/{id}/ping")]
-        public async Task Ping(string id)
-        {
-            await _parliamentEndPointService.Ping(id);
-        }
+    [HttpDelete("endpoints/{id}")]
+    public async Task Delete(string id)
+    {
+        await _parliamentEndPointService.DeleteAsync(id);
+    }
+
+    [HttpPost("endpoints/{id}/ping")]
+    public async Task<ParliamentEndPoint> Ping(string id)
+    {
+        return await _parliamentEndPointService.Ping(id);
     }
 }

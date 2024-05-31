@@ -1,7 +1,5 @@
-﻿namespace UKParliamentEndPointsAdmin.Shared
+﻿namespace UKParliamentEndPointsAdmin.Shared;
+public class AzureStorageSettings
 {
-    public class AzureStorageSettings
-    {
-        public string AzureTableConnectionString => Environment.GetEnvironmentVariable("UKParliamentEndPoints.ConnectionString");
-    }
+    public string AzureTableConnectionString => Environment.GetEnvironmentVariable("UKParliamentEndPoints.ConnectionString");
 }
