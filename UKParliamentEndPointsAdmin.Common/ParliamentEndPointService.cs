@@ -3,6 +3,7 @@
     public class ParliamentEndPointService : IParliamentEndPointService
     {
         private readonly IRepository _repository;
+        private const int HttpRequestTimeOutSeconds = 10;
 
         public ParliamentEndPointService(IRepository repository)
         {
@@ -17,8 +18,9 @@
                 Id = $"{e.PartitionKey}.{e.RowKey}",
                 Uri = e.Uri,
                 Description = e.Description,
-                CachedResponse = e.CachedResponse,
-                CachedDateTime = e.CachedTimeStamp
+                PingTimeStamp = e.PingTimeStamp,
+                PingHttpResponseStatus = e.PingHttpResponseStatus,
+                PingStatus = e.PingStatus
             });
         }
 
@@ -34,7 +36,10 @@
             {
                 Id = $"{entity.PartitionKey}.{entity.RowKey}",
                 Uri = entity.Uri,
-                Description = entity.Description
+                Description = entity.Description,
+                PingTimeStamp = entity.PingTimeStamp,
+                PingHttpResponseStatus = entity.PingHttpResponseStatus,
+                PingStatus =  entity.PingStatus
             };
         }
 
@@ -47,8 +52,9 @@
                 Timestamp = DateTime.Now,
                 Uri = endpoint.Uri,
                 Description = endpoint.Description,
-                CachedResponse = endpoint.CachedResponse,
-                CachedTimeStamp = endpoint.CachedDateTime
+                PingTimeStamp = endpoint.PingTimeStamp,
+                PingHttpResponseStatus = endpoint.PingHttpResponseStatus,
+                PingStatus = endpoint.PingStatus
             };
 
             await _repository.AddAsync(entity);
@@ -59,24 +65,40 @@
             await _repository.DeleteAsync(id);
         }
 
-        public async Task CacheResponse(string id)
+        public async Task Ping(string id)
         {
             var endpoint = await this.GetAsync(id);
             if (!string.IsNullOrWhiteSpace(endpoint?.Uri))
             {
-                var responseString = await FetchStringFromEndpointAsync(endpoint.Uri);
-                await _repository.SetCachedResponse(endpoint.Id, responseString);
+                using var httpClient = new HttpClient();
+                httpClient.Timeout = TimeSpan.FromSeconds(HttpRequestTimeOutSeconds);
+
+                var pingStatus = string.Empty;
+                var pingHttpResponseStatus = 0;
+
+                try
+                {
+                    var response = await httpClient.GetAsync(endpoint.Uri);
+                    pingHttpResponseStatus = (int)response.StatusCode;
+                    pingStatus = response.IsSuccessStatusCode ? "Success" : "Failed";
+                  
+                }
+                catch (HttpRequestException ex)
+                {
+                    pingStatus = $"Failed : {ex.Message}";
+                }
+                catch (TaskCanceledException ex)
+                {
+                    pingStatus = $"Failed : timed out. {ex.Message}";
+                }
+                catch (Exception ex)
+                {
+                    pingStatus = $"Failed. error. {ex.Message}";
+                }
+
+                await _repository.SetPingResponse(endpoint.Id, pingHttpResponseStatus, pingStatus);
             }
         }
 
-        static async Task<string> FetchStringFromEndpointAsync(string url)
-        {
-            using (var httpClient = new HttpClient())
-            {
-                HttpResponseMessage response = await httpClient.GetAsync(url);
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadAsStringAsync();
-            }
-        }
     }
 }

@@ -7,7 +7,8 @@ namespace UKParliamentEndPointsAdmin.Shared
     {
         private readonly TableClient _endpointTableClient;
         private const string EndpointsTableName = "ukparliamentpublicendpoints";
-
+        private const int MaxPageSize = 200;
+        
         public Repository(IOptions<AzureStorageSettings> settings)
         {
             var connectionString = settings.Value.AzureTableConnectionString;
@@ -18,12 +19,19 @@ namespace UKParliamentEndPointsAdmin.Shared
 
         public async Task<IEnumerable<EndPointEntity>> GetAllAsync()
         {
-            var queryResults = _endpointTableClient.QueryAsync<EndPointEntity>(); 
+            var queryResults = _endpointTableClient.QueryAsync<EndPointEntity>();
             var allEntities = new List<EndPointEntity>();
+            var pageCount = 0;
 
             await foreach (var page in queryResults.AsPages())
             {
                 allEntities.AddRange(page.Values);
+                pageCount += page.Values.Count;
+
+                if (pageCount >= MaxPageSize)
+                {
+                    break;
+                }
             }
 
             return allEntities;
@@ -55,13 +63,14 @@ namespace UKParliamentEndPointsAdmin.Shared
             await _endpointTableClient.DeleteEntityAsync(id.GetPartitionKey(), id.GetRowKey());
         }
 
-        public async Task SetCachedResponse(string id, string response)
+        public async Task SetPingResponse(string id, int pingHttpResponseStatus, string pingStatus)
         {
             var entity = await GetAsync(id);
             if (entity != null)
             {
-                entity.CachedResponse = response;
-                entity.CachedTimeStamp = DateTime.Now.ToUniversalTime();
+                entity.PingTimeStamp = DateTime.Now.ToUniversalTime();
+                entity.PingHttpResponseStatus = pingHttpResponseStatus;
+                entity.PingStatus = pingStatus;
                 await _endpointTableClient.UpdateEntityAsync<EndPointEntity>(entity, entity.ETag);
             }
         }
