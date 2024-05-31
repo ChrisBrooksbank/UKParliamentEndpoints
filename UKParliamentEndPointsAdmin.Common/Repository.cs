@@ -18,7 +18,8 @@ public class Repository : IRepository
 
     public async Task<IEnumerable<EndPointEntity>> SearchAsync(SearchQuery searchQuery)
     {
-        var query = _endpointTableClient.QueryAsync<EndPointEntity>();
+        var query = _endpointTableClient.QueryAsync<EndPointEntity>(
+            MapSearchQueryToServerSideFilter(searchQuery), MaxPageSize);
         
         var queryResults = query.AsPages();
         var allEntities = new List<EndPointEntity>();
@@ -28,12 +29,7 @@ public class Repository : IRepository
             allEntities.AddRange(page.Values);
         }
 
-        if (!string.IsNullOrWhiteSpace(searchQuery.Description))
-        {
-            allEntities = allEntities
-                .Where(e => e.Description?.Contains(searchQuery.Description, StringComparison.OrdinalIgnoreCase) == true)
-                .ToList();
-        }
+        allEntities = MapSearchQueryToClientSideFilter(searchQuery, allEntities);
 
         if (searchQuery.Skip is > 0)
         {
@@ -77,12 +73,62 @@ public class Repository : IRepository
     public async Task SetPingResponse(string id, int pingHttpResponseStatus, string pingStatus)
     {
         var entity = await GetAsync(id);
-        if (entity != null)
+        entity.PingTimeStamp = DateTime.Now.ToUniversalTime();
+        entity.PingHttpResponseStatus = pingHttpResponseStatus;
+        entity.PingStatus = pingStatus;
+        await _endpointTableClient.UpdateEntityAsync<EndPointEntity>(entity, entity.ETag);
+    }
+
+    private static string MapSearchQueryToServerSideFilter(SearchQuery searchQuery)
+    {
+        var filter = string.Empty;
+        if (!string.IsNullOrWhiteSpace(searchQuery.PartitionKey))
         {
-            entity.PingTimeStamp = DateTime.Now.ToUniversalTime();
-            entity.PingHttpResponseStatus = pingHttpResponseStatus;
-            entity.PingStatus = pingStatus;
-            await _endpointTableClient.UpdateEntityAsync<EndPointEntity>(entity, entity.ETag);
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                filter += " and ";
+            }
+            filter += TableClient.CreateQueryFilter($"PartitionKey eq {searchQuery.PartitionKey}");
         }
+
+        if (searchQuery.PingHttpResponseStatus.HasValue)
+        {
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                filter += " and ";
+            }
+            filter += TableClient.CreateQueryFilter($"PingHttpResponseStatus eq {searchQuery.PingHttpResponseStatus}");
+        }
+
+        if (searchQuery.PingStatus.HasValue)
+        {
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                filter += " and ";
+            }
+            filter += TableClient.CreateQueryFilter($"PingStatus eq {searchQuery.PingStatus}");
+        }
+
+        return filter;
+    }
+
+    private static List<EndPointEntity> MapSearchQueryToClientSideFilter(SearchQuery searchQuery, List<EndPointEntity> allEntities)
+    {
+        if (!string.IsNullOrWhiteSpace(searchQuery.DescriptionContains))
+        {
+            allEntities = allEntities
+                .Where(e => e.Description?.Contains(searchQuery.DescriptionContains, StringComparison.OrdinalIgnoreCase) ==
+                            true)
+                .ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchQuery.UriContains))
+        {
+            allEntities = allEntities
+                .Where(e => e.Uri?.Contains(searchQuery.UriContains, StringComparison.OrdinalIgnoreCase) == true)
+                .ToList();
+        }
+
+        return allEntities;
     }
 }
