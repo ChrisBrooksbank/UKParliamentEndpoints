@@ -6,6 +6,6 @@
         Task<EndPointEntity> GetAsync(string id);
         Task AddAsync(EndPointEntity entity);
         Task DeleteAsync(string id);
-        Task SetCachedResponse(string id, string response);
+        Task SetPingResponse(string id, int pingHttpResponseStatus, string pingStatus);
     }
 }
