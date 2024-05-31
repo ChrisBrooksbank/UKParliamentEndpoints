@@ -1,7 +1,5 @@
-﻿namespace UKParliamentEndPointsAdmin.Shared
+﻿namespace UKParliamentEndPointsAdmin.Shared;
+public class SearchQuery
 {
-    public class SearchQuery
-    {
-        public string? SearchTerm { get; set; }
-    }
+    public string? SearchTerm { get; set; }
 }
