@@ -7,6 +7,8 @@ public class SearchQuery
     public int? Skip { get; set; }
     [Description("Take")]
     public int? Take { get; set; }
+    public bool? NewOrFailed { get; set; }
+    public string? Description { get; set; }
     [Description("PartitionKey")]
     public string?  PartitionKey { get; set; }
     [Description("PingHttpResponseStatus")]

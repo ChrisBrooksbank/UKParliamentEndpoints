@@ -6,7 +6,7 @@ public class Repository : IRepository
 {
     private readonly TableClient _endpointTableClient;
     private const string EndpointsTableName = "ukparliamentpublicendpoints";
-    private const int MaxPageSize = 200;
+    private const int MaxPageSize = 500;
 
     public Repository(IOptions<AzureStorageSettings> settings)
     {
@@ -89,6 +89,15 @@ public class Repository : IRepository
                 filter += " and ";
             }
             filter += TableClient.CreateQueryFilter($"PartitionKey eq {searchQuery.PartitionKey}");
+        }
+
+        if (searchQuery.NewOrFailed.HasValue)
+        {
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                filter += " and ";
+            }
+            filter += TableClient.CreateQueryFilter($"PingStatus ne {200}");
         }
 
         if (searchQuery.PingHttpResponseStatus.HasValue)
