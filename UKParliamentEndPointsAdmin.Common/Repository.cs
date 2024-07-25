@@ -91,7 +91,7 @@ public class Repository : IRepository
             filter += TableClient.CreateQueryFilter($"PartitionKey eq {searchQuery.PartitionKey}");
         }
 
-        if (searchQuery.NewOrFailed.HasValue)
+        if (searchQuery.NewOrFailed.HasValue && searchQuery.NewOrFailed.Value)
         {
             if (!string.IsNullOrWhiteSpace(filter))
             {
