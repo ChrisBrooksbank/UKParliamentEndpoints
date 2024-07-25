@@ -22,7 +22,19 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 app.UseSwagger();
-app.UseSwaggerUI();
+
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    
+    // Inject custom HTML at the start of the page
+    c.HeadContent = @"
+        <div style='padding: 20px; background-color: #f0f0f0; text-align: center;'>
+            <h1 style='color: #333;'>UK Parliament Endpoints Admin API</h1>
+            <h2 style='color: #333;'>For Coach And Focus</h2>
+            <p>The repo for this API is <a href='https://github.com/ChrisBrooksbank/UKParliamentEndpoints'>here</a></p>
+        </div>";
+});
 
 app.UseHttpsRedirection();
 
