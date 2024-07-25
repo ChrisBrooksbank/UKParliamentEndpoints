@@ -97,7 +97,7 @@ public class Repository : IRepository
             {
                 filter += " and ";
             }
-            filter += TableClient.CreateQueryFilter($"PingStatus ne {200}");
+            filter += TableClient.CreateQueryFilter($"PingHttpResponseStatus ne {200}");
         }
 
         if (searchQuery.PingHttpResponseStatus.HasValue)
