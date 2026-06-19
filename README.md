@@ -1,47 +1,60 @@
 # UKParliamentEndpoints
 
-This project maintains a collection of public UK Parliament API endpoints. 
-The data is stored in Azure Table storage, simplifying the discovery and use of public UK Parliament data.
+A .NET 8 API for maintaining a collection of public UK Parliament API endpoints.
+
+Endpoint metadata is stored in Azure Table Storage so Parliament data sources can be discovered, checked, and reused more easily.
+
+## Project structure
+
+- `admin/` - ASP.NET Core API.
+- `UKParliamentEndPointsAdmin.Common/` - shared models and Azure Table Storage integration.
+- `.github/` - GitHub configuration and workflows.
 
 ## Endpoints
 
-### Parliament Endpoints
+The API controller is routed under `ParliamentEndpoint`.
 
-1. **GET /api/ParliamentEndpoint**
-   - **Description**: Retrieves a list of all stored Parliament API endpoints.
-   - **Response**: JSON array of endpoint objects.
+### `GET /ParliamentEndpoint/endpoints`
 
-2. **GET /api/ParliamentEndpoint/{id}**
-   - **Description**: Retrieves a specific Parliament API endpoint by its ID.
-   - **Parameters**: `id` (string) - The ID of the endpoint.
-   - **Response**: JSON object of the endpoint details.
+Retrieves the stored Parliament API endpoints.
 
-3. **POST /api/ParliamentEndpoint**
-   - **Description**: Adds a new Parliament API endpoint.
-   - **Request Body**: JSON object with endpoint details.
-   - **Response**: JSON object of the created endpoint.
+### `GET /ParliamentEndpoint/endpoints/{id}`
 
-4. **PUT /api/ParliamentEndpoint/{id}**
-   - **Description**: Updates an existing Parliament API endpoint by its ID.
-   - **Parameters**: `id` (string) - The ID of the endpoint.
-   - **Request Body**: JSON object with updated endpoint details.
-   - **Response**: JSON object of the updated endpoint.
+Retrieves a specific endpoint by ID.
 
-5. **DELETE /api/ParliamentEndpoint/{id}**
-   - **Description**: Deletes a specific Parliament API endpoint by its ID.
-   - **Parameters**: `id` (string) - The ID of the endpoint.
-   - **Response**: Status message indicating the result of the operation.
+### `POST /ParliamentEndpoint/endpoints`
+
+Adds a new Parliament endpoint.
+
+### `PUT /ParliamentEndpoint/endpoints`
+
+Updates an existing Parliament endpoint.
+
+### `DELETE /ParliamentEndpoint/endpoints/{id}`
+
+Deletes a Parliament endpoint by ID.
+
+### `POST /ParliamentEndpoint/endpoints/{id}/ping`
+
+Checks a specific endpoint and records the result.
 
 ## Configuration
 
-To run this project, you need to configure your Azure Table connection string.
+Configure Azure Table Storage settings in `appsettings.json`, user secrets, or environment-specific configuration.
 
-1. Open the configuration file.
-2. Add your Azure Table connection string in the appropriate section.
+The API reads settings from the `AzureStorage` configuration section.
 
-## Usage
+## Run locally
 
-1. Clone the repository: `git clone https://github.com/ChrisBrooksbank/UKParliamentEndpoints.git`
-2. Navigate to the project directory: `cd UKParliamentEndpoints`
-3. Configure your Azure Table connection string.
-4. Build and run the project.
+```bash
+dotnet restore
+dotnet run --project admin/UKParliamentEndPointsAdmin.API.csproj
+```
+
+Swagger is enabled by the application and can be used to explore the API locally.
+
+## Related repositories
+
+- [UKParliamentEndPointsAdmin](https://github.com/ChrisBrooksbank/UKParliamentEndPointsAdmin) - Blazor admin UI.
+- [UKParlyEndPointsFuncApp](https://github.com/ChrisBrooksbank/UKParlyEndPointsFuncApp) - scheduled endpoint checks.
+- [UKParliamentEndPointsAIChat](https://github.com/ChrisBrooksbank/UKParliamentEndPointsAIChat) - AI chat interface over the endpoint data.
